@@ -144,36 +144,56 @@ exports.exportExcel = async (req, res) => {
     const ExcelJS = require("exceljs");
     let data = await Iklim.find();
 
-    // Bersihkan format untuk export
-    data = data.map((item) => ({
-      ...item.toObject(),
-      ID_WMO: item.ID_WMO.replace(/^:\s+/, ""),
-      NAMA_STASIUN: item.NAMA_STASIUN.replace(/^:\s+/, ""),
-    }));
-
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Data Iklim");
 
     worksheet.columns = [
-      { header: "ID WMO", key: "ID_WMO" },
-      { header: "Nama Stasiun", key: "NAMA_STASIUN" },
-      { header: "Latitude", key: "LATITUDE" },
-      { header: "Longitude", key: "LONGITUDE" },
-      { header: "Elevation", key: "ELEVATION" },
-      { header: "Tanggal", key: "TANGGAL" },
-      { header: "Temperatur Min (°C)", key: "TN" },
-      { header: "Temperatur Max (°C)", key: "TX" },
-      { header: "Temperatur Avg (°C)", key: "TAVG" },
-      { header: "Kelembaban Rata-rata (%)", key: "RH_AVG" },
-      { header: "Curah Hujan (mm)", key: "RR" },
-      { header: "Lama Penyinaran (jam)", key: "SS" },
-      { header: "Kecepatan Angin Max (knot)", key: "FF_X" },
-      { header: "Arah Angin saat Max", key: "DDD_X" },
-      { header: "Kecepatan Angin Rata-rata (knot)", key: "FF_AVG" },
-      { header: "Arah Angin Terbanyak", key: "DDD_CAR" },
+      { header: "ID WMO", key: "id_wmo", width: 12 },
+      { header: "Nama Stasiun", key: "nama_stasiun", width: 25 },
+      { header: "Tanggal", key: "tanggal", width: 12 },
+      { header: "TN", key: "tn", width: 8 },
+      { header: "TX", key: "tx", width: 8 },
+      { header: "TAVG", key: "tavg", width: 8 },
+      { header: "RH", key: "rh", width: 8 },
+      { header: "RR", key: "rr", width: 8 },
+      { header: "SS", key: "ss", width: 8 },
+      { header: "FF_X", key: "ff_x", width: 8 },
+      { header: "DDD_X", key: "ddd_x", width: 8 },
+      { header: "FF_AVG", key: "ff_avg", width: 8 },
+      { header: "DDD_CAR", key: "ddd_car", width: 8 },
     ];
 
-    data.forEach((item) => worksheet.addRow(item));
+    // Format setiap kolom
+    worksheet.getColumn("tanggal").numFmt = "dd/mm/yyyy";
+    ["tn", "tx", "tavg", "rh", "rr", "ss", "ff_x", "ff_avg"].forEach((col) => {
+      worksheet.getColumn(col).numFmt = "0.0";
+    });
+
+    // Tambahkan data
+    data.forEach((item) => {
+      worksheet.addRow({
+        id_wmo: item.ID_WMO.replace(/^:\s+/, ""),
+        nama_stasiun: item.NAMA_STASIUN.replace(/^:\s+/, ""),
+        tanggal: new Date(item.TANGGAL),
+        tn: item.TN,
+        tx: item.TX,
+        tavg: item.TAVG,
+        rh: item.RH_AVG,
+        rr: item.RR === 8888 ? null : item.RR,
+        ss: item.SS === 8888 ? null : item.SS,
+        ff_x: item.FF_X,
+        ddd_x: item.DDD_X,
+        ff_avg: item.FF_AVG,
+        ddd_car: item.DDD_CAR,
+      });
+    });
+
+    // Sesuaikan header style
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).alignment = {
+      vertical: "middle",
+      horizontal: "center",
+    };
 
     res.setHeader(
       "Content-Disposition",
