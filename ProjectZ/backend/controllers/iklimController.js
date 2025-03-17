@@ -142,7 +142,14 @@ exports.searchData = async (req, res) => {
 exports.exportExcel = async (req, res) => {
   try {
     const ExcelJS = require("exceljs");
-    const data = await Iklim.find();
+    let data = await Iklim.find();
+
+    // Bersihkan format untuk export
+    data = data.map((item) => ({
+      ...item.toObject(),
+      ID_WMO: item.ID_WMO.replace(/^:\s+/, ""),
+      NAMA_STASIUN: item.NAMA_STASIUN.replace(/^:\s+/, ""),
+    }));
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Data Iklim");
@@ -184,7 +191,14 @@ exports.exportExcel = async (req, res) => {
 exports.exportPDF = async (req, res) => {
   try {
     const PDFDocument = require("pdfkit");
-    const data = await Iklim.find();
+    let data = await Iklim.find();
+
+    // Bersihkan format untuk export
+    data = data.map((item) => ({
+      ...item.toObject(),
+      ID_WMO: item.ID_WMO.replace(/^:\s+/, ""),
+      NAMA_STASIUN: item.NAMA_STASIUN.replace(/^:\s+/, ""),
+    }));
 
     const doc = new PDFDocument();
 

@@ -52,6 +52,48 @@ const SearchData = () => {
     }
   };
 
+  const handleExportExcel = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/iklim/export/excel",
+        {
+          responseType: "blob",
+        }
+      );
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "data-iklim.xlsx");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      setError("Gagal mengekspor Excel");
+      console.error("Error:", err);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/iklim/export/pdf",
+        {
+          responseType: "blob",
+        }
+      );
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "data-iklim.pdf");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      setError("Gagal mengekspor PDF");
+      console.error("Error:", err);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center p-6">
       <div className="w-full md:w-1/2 bg-white shadow-lg rounded-lg p-6">
@@ -207,12 +249,6 @@ const SearchData = () => {
           {loading ? "Mencari..." : "Proses"}
         </button>
 
-        {error && (
-          <div className="mt-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded">
-            {error}
-          </div>
-        )}
-
         {results.length > 0 && (
           <div className="mt-6">
             <h3 className="text-lg font-semibold mb-2">Hasil Pencarian</h3>
@@ -247,6 +283,22 @@ const SearchData = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Export Buttons */}
+            <div className="mt-4 flex justify-center space-x-4">
+              <button
+                onClick={handleExportExcel}
+                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+              >
+                Export to Excel
+              </button>
+              <button
+                onClick={handleExportPDF}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Export to PDF
+              </button>
             </div>
 
             {/* Pagination */}
